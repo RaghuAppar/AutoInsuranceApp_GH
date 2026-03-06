@@ -1,50 +1,54 @@
 # Push This Repo to GitHub
 
-This repo is set up to push to both **Azure DevOps** (`origin`) and **GitHub** (remote `github`).
+**origin** is set to the GitHub repository **AutoInsuranceApp_GH**. **azure** is the Azure DevOps repo.
 
 ## One-time setup
 
-1. **Create a repository on GitHub** (if you haven’t already):  
+1. **Create a repository on GitHub** named **AutoInsuranceApp_GH** (if you haven’t already):  
    https://github.com/new  
-   Name it e.g. `AutoInsuranceApp` and leave it empty (no README, .gitignore, or license).
+   Leave it empty (no README, .gitignore, or license).
 
-2. **Point the `github` remote at your repo** (replace with your org/user and repo name):
+2. **Set the origin URL** (replace `RaghuAppar` with your GitHub username or organization):
 
    ```bash
-   git remote set-url github https://github.com/YOUR_ORG_OR_USER/AutoInsuranceApp.git
+   git remote set-url origin https://github.com/RaghuAppar/AutoInsuranceApp_GH.git
    ```
 
    Or with SSH:
 
    ```bash
-   git remote set-url github git@github.com:YOUR_ORG_OR_USER/AutoInsuranceApp.git
+   git remote set-url origin git@github.com:RaghuAppar/AutoInsuranceApp_GH.git
    ```
 
-3. **Push branches to GitHub**:
+3. **Push the development branch to GitHub**:
 
    ```bash
-   # Push development (and create it on GitHub if needed)
-   git push -u github development
+   git push -u origin development
+   ```
 
-   # Optionally push main and release
-   git push github main
-   git push github release
+   Optionally push other branches:
+
+   ```bash
+   git push origin main
+   git push origin release
    ```
 
 ## Remotes
 
-- **origin** – Azure DevOps: `https://dev.azure.com/WPAzureDevOpsTrng/AutoInsuranceApp/_git/AutoInsuranceApp`
-- **github** – GitHub: set with the command above
+| Remote  | Repository |
+|---------|------------|
+| **origin** | GitHub **AutoInsuranceApp_GH**: `https://github.com/RaghuAppar/AutoInsuranceApp_GH.git` (replace `RaghuAppar`) |
+| **azure**  | Azure DevOps: `https://dev.azure.com/WPAzureDevOpsTrng/AutoInsuranceApp/_git/AutoInsuranceApp` |
 
-## Later: push updates to both
+## Push to both
 
 ```bash
-git push origin development    # Azure DevOps
-git push github development    # GitHub
+git push origin development    # GitHub
+git push azure development     # Azure DevOps
 ```
 
-Or push to both in one go:
+Or in one go:
 
 ```bash
-git push origin development && git push github development
+git push origin development && git push azure development
 ```
