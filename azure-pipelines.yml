@@ -1,12 +1,10 @@
 # AutoInsuranceApp CI Pipeline
-# Builds API, runs API and Client unit tests on every push to development/main/release and on PRs.
+# Builds API, runs API and Client unit tests on development branch only.
 
 trigger:
   branches:
     include:
-      - main
       - development
-      - release
   paths:
     exclude:
       - '*.md'
@@ -15,12 +13,9 @@ trigger:
 pr:
   branches:
     include:
-      - main
       - development
-      - release
 
-pool:
-  vmImage: 'ubuntu-22.04'
+pool: Default
 
 variables:
   dotnetSdkVersion: '8.0.x'
