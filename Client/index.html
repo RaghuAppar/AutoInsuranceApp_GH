@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="autoInsuranceApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Insurance Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231a5f7a' rx='4'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='white'>A</text></svg>">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+</head>
+<body>
+  <div ng-if="!isPublicRoute()">
+    <header class="app-header">
+      <div class="header-inner">
+        <a href="#!/dashboard" class="logo">Auto Insurance</a>
+        <nav class="main-nav">
+          <a href="#!/dashboard" ng-class="{ active: isActive('/dashboard') }">Dashboard</a>
+          <a href="#!/profile" ng-class="{ active: isActive('/profile') }">My Profile</a>
+          <a href="#!/vehicles" ng-class="{ active: isActive('/vehicles') }">Vehicles</a>
+          <a href="#!/drivers" ng-class="{ active: isActive('/drivers') }">Drivers</a>
+          <a href="#!/quote/new" ng-class="{ active: isActive('/quote') }">Get a Quote</a>
+          <a href="#!/quotes" ng-class="{ active: isActive('/quotes') }">My Quotes</a>
+          <a href="#!/policies" ng-class="{ active: isActive('/policies') }">Policies</a>
+          <a href="#!/claims" ng-class="{ active: isActive('/claims') }">Claims</a>
+          <a href="#!/payments" ng-class="{ active: isActive('/payments') }">Payments</a>
+        </nav>
+        <div class="user-menu">
+          <span class="user-name">{{ currentUser.fullName }}</span>
+          <a href="#!/login" ng-click="logout()" class="btn btn-outline">Logout</a>
+        </div>
+      </div>
+    </header>
+    <main class="app-main">
+      <div ng-view class="view-container"></div>
+    </main>
+  </div>
+  <div ng-if="isPublicRoute()" class="public-wrapper">
+    <div ng-view class="view-container"></div>
+  </div>
+  <script src="app.js"></script>
+  <script src="services/auth.service.js"></script>
+  <script src="services/api.service.js"></script>
+  <script src="services/profile.service.js"></script>
+  <script src="services/vehicle.service.js"></script>
+  <script src="services/driver.service.js"></script>
+  <script src="services/quote.service.js"></script>
+  <script src="services/policy.service.js"></script>
+  <script src="services/claim.service.js"></script>
+  <script src="services/payment.service.js"></script>
+  <script src="controllers/login.controller.js"></script>
+  <script src="controllers/register.controller.js"></script>
+  <script src="controllers/dashboard.controller.js"></script>
+  <script src="controllers/profile.controller.js"></script>
+  <script src="controllers/vehicles.controller.js"></script>
+  <script src="controllers/drivers.controller.js"></script>
+  <script src="controllers/quote.controller.js"></script>
+  <script src="controllers/quotes.controller.js"></script>
+  <script src="controllers/quote-detail.controller.js"></script>
+  <script src="controllers/policies.controller.js"></script>
+  <script src="controllers/policy-detail.controller.js"></script>
+  <script src="controllers/claims.controller.js"></script>
+  <script src="controllers/claim-new.controller.js"></script>
+  <script src="controllers/claim-detail.controller.js"></script>
+  <script src="controllers/payments.controller.js"></script>
+</body>
+</html>

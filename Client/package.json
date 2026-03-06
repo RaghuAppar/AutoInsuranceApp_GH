@@ -1,0 +1,12 @@
+{
+  "name": "auto-insurance-client",
+  "version": "1.0.0",
+  "description": "Auto Insurance AngularJS 1.x client",
+  "scripts": {
+    "start": "http-server -p 3000 -c-1 -o",
+    "serve": "http-server -p 3000 -c-1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

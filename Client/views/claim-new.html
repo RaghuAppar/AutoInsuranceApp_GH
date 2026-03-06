@@ -1,0 +1,39 @@
+<div class="card">
+  <h2>File a Claim</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <form ng-if="!vm.loading" ng-submit="vm.submit()">
+    <div class="form-group">
+      <label>Policy (optional)</label>
+      <select ng-model="vm.model.policyId">
+        <option value="">— Select policy —</option>
+        <option ng-repeat="p in vm.policies" value="{{ p.id }}">{{ p.policyNumber }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Incident Date</label>
+      <input type="date" ng-model="vm.model.incidentDate" required>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea ng-model="vm.model.description" rows="4" placeholder="What happened?" required></textarea>
+    </div>
+    <div class="form-group">
+      <label>Location</label>
+      <input type="text" ng-model="vm.model.location" placeholder="Where did it happen?">
+    </div>
+    <div class="form-group">
+      <label>Involved Parties</label>
+      <input type="text" ng-model="vm.model.involvedParties" placeholder="Other drivers, witnesses, etc.">
+    </div>
+    <div class="form-group">
+      <label>Claim Type</label>
+      <select ng-model="vm.model.claimType">
+        <option value="FirstParty">First party (my vehicle)</option>
+        <option value="ThirdParty">Third party (liability)</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success" ng-disabled="vm.submitting">{{ vm.submitting ? 'Submitting...' : 'Submit Claim' }}</button>
+    <a href="#!/claims" class="btn btn-outline" style="color: #333; border-color: #999;">Cancel</a>
+  </form>
+</div>

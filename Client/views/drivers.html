@@ -1,0 +1,68 @@
+<div class="card">
+  <h2>Drivers</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading">
+    <div class="actions">
+      <button type="button" class="btn btn-primary" ng-click="vm.showForm = !vm.showForm" ng-hide="vm.showForm">Add Driver</button>
+    </div>
+    <div ng-if="vm.showForm" class="card" style="margin-top: 16px;">
+      <h3>New Driver</h3>
+      <form ng-submit="vm.add()">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" ng-model="vm.model.fullName" required>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" ng-model="vm.model.dateOfBirth">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>License Number</label>
+            <input type="text" ng-model="vm.model.licenseNumber">
+          </div>
+          <div class="form-group">
+            <label>License State</label>
+            <input type="text" ng-model="vm.model.licenseState">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>License Expiry</label>
+          <input type="date" ng-model="vm.model.licenseExpiry">
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" ng-model="vm.model.isPrimary"> Primary driver</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Driver</button>
+        <button type="button" class="btn btn-outline" ng-click="vm.showForm = false" style="color: #333; border-color: #999;">Cancel</button>
+      </form>
+    </div>
+    <div ng-if="!vm.list.length && !vm.showForm" class="empty-state">
+      <p>No drivers added yet.</p>
+      <button type="button" class="btn btn-primary" ng-click="vm.showForm = true">Add Driver</button>
+    </div>
+    <div class="table-wrap" ng-if="vm.list.length" style="margin-top: 20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>License</th>
+            <th>Primary</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="d in vm.list">
+            <td>{{ d.fullName }}</td>
+            <td>{{ d.licenseNumber || '—' }} {{ d.licenseState || '' }}</td>
+            <td>{{ d.isPrimary ? 'Yes' : 'No' }}</td>
+            <td>
+              <button type="button" class="btn btn-danger btn-sm" ng-click="vm.remove(d.id)">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

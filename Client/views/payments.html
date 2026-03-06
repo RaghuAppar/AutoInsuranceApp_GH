@@ -1,0 +1,31 @@
+<div class="card">
+  <h2>Payment History</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading && !vm.list.length" class="empty-state">
+    <p>No payments yet. Payments will appear here when you pay a policy.</p>
+    <a href="#!/policies" class="btn btn-primary">View Policies</a>
+  </div>
+  <div class="table-wrap" ng-if="!vm.loading && vm.list.length">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Policy ID</th>
+          <th>Amount</th>
+          <th>Method</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="p in vm.list">
+          <td>{{ p.paidAt ? (p.paidAt | date:'short') : (p.createdAt | date:'short') }}</td>
+          <td>{{ p.policyId }}</td>
+          <td>{{ p.isRefund ? '-' : '' }}${{ p.amount | number:2 }}</td>
+          <td>{{ p.paymentMethod }}</td>
+          <td><span class="status-badge" ng-class="{'status-completed': p.status === 'Completed', 'status-pending': p.status === 'Pending', 'status-cancelled': p.status === 'Failed'}">{{ p.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

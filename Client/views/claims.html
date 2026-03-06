@@ -1,0 +1,36 @@
+<div class="card">
+  <h2>Claims</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading">
+    <div class="actions">
+      <a href="#!/claims/new" class="btn btn-success">File a Claim</a>
+    </div>
+    <div ng-if="!vm.list.length" class="empty-state">
+      <p>No claims filed. <a href="#!/claims/new">File a claim</a> if you had an incident.</p>
+      <a href="#!/claims/new" class="btn btn-primary">File a Claim</a>
+    </div>
+    <div class="table-wrap" ng-if="vm.list.length" style="margin-top: 20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Claim #</th>
+            <th>Incident Date</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="c in vm.list">
+            <td>{{ c.claimNumber }}</td>
+            <td>{{ c.incidentDate | date:'shortDate' }}</td>
+            <td>{{ c.description | limitTo:40 }}{{ c.description.length > 40 ? '...' : '' }}</td>
+            <td><span class="status-badge" ng-class="{'status-submitted': c.status === 'Submitted', 'status-active': c.status === 'UnderReview', 'status-paid': c.status === 'Paid' || c.status === 'Approved', 'status-denied': c.status === 'Denied'}">{{ c.status }}</span></td>
+            <td><a href="#!/claims/{{ c.id }}" class="btn btn-primary btn-sm">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

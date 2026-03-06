@@ -1,0 +1,16 @@
+<div class="auth-card">
+  <h1>Sign In</h1>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <form ng-submit="vm.submit()">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" ng-model="vm.email" placeholder="you@example.com" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input id="password" type="password" ng-model="vm.password" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn btn-primary" ng-disabled="vm.loading">{{ vm.loading ? 'Signing in...' : 'Sign In' }}</button>
+  </form>
+  <p class="footer-link">Don't have an account? <a href="#!/register">Register</a></p>
+</div>

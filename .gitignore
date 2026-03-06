@@ -1,0 +1,44 @@
+# .NET
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.log
+*.vspscc
+*.vssscc
+.vs/
+*.db
+*.db-shm
+*.db-wal
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+
+# Node / Client
+Client/node_modules/
+node_modules/
+npm-debug.log*
+.npm
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Secrets / env
+*.env
+appsettings.Development.json
+!appsettings.json

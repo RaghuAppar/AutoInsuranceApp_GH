@@ -1,0 +1,43 @@
+<div class="card">
+  <h2>Dashboard</h2>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading">
+    <div class="card-grid">
+      <div class="card">
+        <h3>My Policies</h3>
+        <p ng-if="!vm.policies.length">No policies yet. <a href="#!/quote/new">Get a quote</a> to get started.</p>
+        <ul ng-if="vm.policies.length" style="list-style: none; padding: 0;">
+          <li ng-repeat="p in vm.policies | limitTo:3" style="padding: 8px 0; border-bottom: 1px solid #eee;">
+            <a href="#!/policies/{{ p.id }}">{{ p.policyNumber }}</a> — {{ p.status }} (expires {{ p.expiryDate | date:'shortDate' }})
+          </li>
+        </ul>
+        <a href="#!/policies" class="btn btn-primary btn-sm" style="margin-top: 12px;">View all policies</a>
+      </div>
+      <div class="card">
+        <h3>Recent Quotes</h3>
+        <p ng-if="!vm.quotes.length">No quotes yet. <a href="#!/quote/new">Get a quote</a>.</p>
+        <ul ng-if="vm.quotes.length" style="list-style: none; padding: 0;">
+          <li ng-repeat="q in vm.quotes | limitTo:3" style="padding: 8px 0; border-bottom: 1px solid #eee;">
+            <a href="#!/quotes/{{ q.id }}">{{ q.quoteNumber }}</a> — ${{ q.totalPremium | number:2 }} — {{ q.status }}
+          </li>
+        </ul>
+        <a href="#!/quotes" class="btn btn-primary btn-sm" style="margin-top: 12px;">View all quotes</a>
+      </div>
+      <div class="card">
+        <h3>Recent Claims</h3>
+        <p ng-if="!vm.claims.length">No claims filed.</p>
+        <ul ng-if="vm.claims.length" style="list-style: none; padding: 0;">
+          <li ng-repeat="c in vm.claims | limitTo:3" style="padding: 8px 0; border-bottom: 1px solid #eee;">
+            <a href="#!/claims/{{ c.id }}">{{ c.claimNumber }}</a> — {{ c.status }}
+          </li>
+        </ul>
+        <a href="#!/claims" class="btn btn-primary btn-sm" style="margin-top: 12px;">View all claims</a>
+      </div>
+    </div>
+    <div class="actions" style="margin-top: 24px;">
+      <a href="#!/profile" class="btn btn-primary">My Profile</a>
+      <a href="#!/vehicles" class="btn btn-primary">My Vehicles</a>
+      <a href="#!/quote/new" class="btn btn-success">Get a Quote</a>
+    </div>
+  </div>
+</div>

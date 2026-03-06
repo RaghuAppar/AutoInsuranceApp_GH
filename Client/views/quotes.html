@@ -1,0 +1,36 @@
+<div class="card">
+  <h2>My Quotes</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading">
+    <div class="actions">
+      <a href="#!/quote/new" class="btn btn-success">Get a New Quote</a>
+    </div>
+    <div ng-if="!vm.list.length" class="empty-state">
+      <p>No quotes yet. <a href="#!/quote/new">Get a quote</a> to see premium estimates.</p>
+      <a href="#!/quote/new" class="btn btn-primary">Get a Quote</a>
+    </div>
+    <div class="table-wrap" ng-if="vm.list.length" style="margin-top: 20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Quote #</th>
+            <th>Total Premium</th>
+            <th>Status</th>
+            <th>Valid Until</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="q in vm.list">
+            <td>{{ q.quoteNumber }}</td>
+            <td>${{ q.totalPremium | number:2 }}</td>
+            <td><span class="status-badge" ng-class="{'status-completed': q.status === 'Completed', 'status-pending': q.status === 'Draft', 'status-cancelled': q.status === 'Expired'}">{{ q.status }}</span></td>
+            <td>{{ q.validUntil | date:'shortDate' }}</td>
+            <td><a href="#!/quotes/{{ q.id }}" class="btn btn-primary btn-sm">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

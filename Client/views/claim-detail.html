@@ -1,0 +1,27 @@
+<div class="card">
+  <h2>Claim Details</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading && vm.claim">
+    <p><strong>Claim #:</strong> {{ vm.claim.claimNumber }}</p>
+    <p><strong>Status:</strong> <span class="status-badge" ng-class="{'status-submitted': vm.claim.status === 'Submitted', 'status-active': vm.claim.status === 'UnderReview', 'status-paid': vm.claim.status === 'Paid' || vm.claim.status === 'Approved', 'status-denied': vm.claim.status === 'Denied'}">{{ vm.claim.status }}</span></p>
+    <p><strong>Incident date:</strong> {{ vm.claim.incidentDate | date:'mediumDate' }}</p>
+    <p><strong>Type:</strong> {{ vm.claim.claimType }}</p>
+    <p><strong>Description:</strong></p>
+    <p>{{ vm.claim.description }}</p>
+    <p ng-if="vm.claim.location"><strong>Location:</strong> {{ vm.claim.location }}</p>
+    <p ng-if="vm.claim.involvedParties"><strong>Involved parties:</strong> {{ vm.claim.involvedParties }}</p>
+    <p ng-if="vm.claim.notes"><strong>Notes:</strong> {{ vm.claim.notes }}</p>
+    <p><strong>Submitted:</strong> {{ vm.claim.createdAt | date:'medium' }}</p>
+    <p><strong>Last updated:</strong> {{ vm.claim.updatedAt | date:'medium' }}</p>
+    <div ng-if="vm.claim.documents && vm.claim.documents.length">
+      <h3>Documents</h3>
+      <ul>
+        <li ng-repeat="d in vm.claim.documents">{{ d.fileName }} ({{ d.documentType }}) — {{ d.uploadedAt | date:'short' }}</li>
+      </ul>
+    </div>
+    <div class="actions" style="margin-top: 20px;">
+      <a href="#!/claims" class="btn btn-outline" style="color: #333; border-color: #999;">Back to Claims</a>
+    </div>
+  </div>
+</div>

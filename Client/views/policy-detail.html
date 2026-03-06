@@ -1,0 +1,22 @@
+<div class="card">
+  <h2>Policy Details</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading && vm.policy">
+    <p><strong>Policy #:</strong> {{ vm.policy.policyNumber }}</p>
+    <p><strong>Status:</strong> <span class="status-badge" ng-class="{'status-active': vm.policy.status === 'Active', 'status-cancelled': vm.policy.status === 'Cancelled'}">{{ vm.policy.status }}</span></p>
+    <p><strong>Effective:</strong> {{ vm.policy.effectiveDate | date:'mediumDate' }} — <strong>Expiry:</strong> {{ vm.policy.expiryDate | date:'mediumDate' }}</p>
+    <p><strong>Total premium:</strong> ${{ vm.policy.totalPremium | number:2 }} ({{ vm.policy.paymentPlan }})</p>
+    <h3>Covered vehicles</h3>
+    <ul ng-if="vm.policy.vehicles && vm.policy.vehicles.length">
+      <li ng-repeat="v in vm.policy.vehicles">{{ v.year }} {{ v.make }} {{ v.model }} ({{ v.vin }})</li>
+    </ul>
+    <div ng-if="vm.policy.status === 'Active'" class="actions" style="margin-top: 20px;">
+      <button type="button" class="btn btn-danger" ng-click="vm.cancel()" ng-disabled="vm.cancelling">{{ vm.cancelling ? 'Cancelling...' : 'Cancel Policy' }}</button>
+    </div>
+    <div class="actions" style="margin-top: 16px;">
+      <a href="#!/policies" class="btn btn-outline" style="color: #333; border-color: #999;">Back to Policies</a>
+      <a href="#!/payments" class="btn btn-primary">Payment History</a>
+    </div>
+  </div>
+</div>

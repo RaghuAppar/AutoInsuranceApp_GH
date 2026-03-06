@@ -1,0 +1,33 @@
+<div class="card">
+  <h2>My Policies</h2>
+  <div ng-if="vm.error" class="alert alert-error">{{ vm.error }}</div>
+  <p ng-if="vm.loading">Loading...</p>
+  <div ng-if="!vm.loading && !vm.list.length" class="empty-state">
+    <p>No policies yet. Get a quote and purchase to create a policy.</p>
+    <a href="#!/quote/new" class="btn btn-primary">Get a Quote</a>
+  </div>
+  <div class="table-wrap" ng-if="!vm.loading && vm.list.length">
+    <table>
+      <thead>
+        <tr>
+          <th>Policy #</th>
+          <th>Effective</th>
+          <th>Expiry</th>
+          <th>Premium</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="p in vm.list">
+          <td>{{ p.policyNumber }}</td>
+          <td>{{ p.effectiveDate | date:'shortDate' }}</td>
+          <td>{{ p.expiryDate | date:'shortDate' }}</td>
+          <td>${{ p.totalPremium | number:2 }}</td>
+          <td><span class="status-badge" ng-class="{'status-active': p.status === 'Active', 'status-cancelled': p.status === 'Cancelled', 'status-pending': p.status === 'Pending'}">{{ p.status }}</span></td>
+          <td><a href="#!/policies/{{ p.id }}" class="btn btn-primary btn-sm">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
