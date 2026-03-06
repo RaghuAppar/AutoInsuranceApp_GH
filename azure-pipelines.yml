@@ -1,0 +1,90 @@
+# AutoInsuranceApp CI Pipeline
+# Builds API, runs API and Client unit tests on every push to development/main/release and on PRs.
+
+trigger:
+  branches:
+    include:
+      - main
+      - development
+      - release
+  paths:
+    exclude:
+      - '*.md'
+      - 'docs/*'
+
+pr:
+  branches:
+    include:
+      - main
+      - development
+      - release
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+variables:
+  dotnetSdkVersion: '8.0.x'
+  nodeVersion: '20.x'
+
+stages:
+  - stage: BuildAndTest
+    displayName: 'Build and Test'
+    jobs:
+      - job: API
+        displayName: 'API Build and Test'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8'
+            inputs:
+              packageType: 'sdk'
+              version: $(dotnetSdkVersion)
+              includePreviewVersions: false
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore API'
+            inputs:
+              command: 'restore'
+              projects: '**/*.csproj'
+              feedsToUse: 'select'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build API'
+            inputs:
+              command: 'build'
+              projects: '**/AutoInsuranceApi/*.csproj'
+              arguments: '--no-restore --configuration Release'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Run API Unit Tests'
+            inputs:
+              command: 'test'
+              projects: '**/AutoInsuranceApi.Tests/*.csproj'
+              arguments: '--no-build --configuration Release --verbosity normal'
+              publishTestResults: true
+              testRunTitle: 'API Unit Tests'
+
+      - job: Client
+        displayName: 'Client Unit Tests'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node 20'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              cd Client
+              npm ci
+            displayName: 'npm ci (Client)'
+
+          - script: |
+              if [ -f /usr/bin/google-chrome ]; then
+                export CHROME_BIN=/usr/bin/google-chrome
+              elif [ -f /usr/bin/chromium-browser ]; then
+                export CHROME_BIN=/usr/bin/chromium-browser
+              else
+                sudo apt-get update -qq
+                sudo apt-get install -y chromium-browser
+                export CHROME_BIN=/usr/bin/chromium-browser
+              fi
+              cd Client && npm run test:once
+            displayName: 'Run Client Unit Tests (Karma/Jasmine)'
