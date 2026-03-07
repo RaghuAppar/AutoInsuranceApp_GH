@@ -17,7 +17,7 @@ public class AuthController : ControllerBase
 
     public AuthController(IAuthService authService)
     {
-        _authService = authService;
+        _authService = authService;        
     }
 
     /// <summary>POST /api/auth/register - Register a new user</summary>
