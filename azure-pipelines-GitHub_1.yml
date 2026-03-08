@@ -1,0 +1,109 @@
+# AutoInsuranceApp CI Pipeline
+# Builds API, runs API and Client unit tests on development branch only.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - '*.md'
+      - 'docs/*'
+
+pr:
+  branches:
+    include:
+      - development
+
+pool: Default
+
+variables:
+  dotnetSdkVersion: '8.0.x'
+  nodeVersion: '20.x'
+
+stages:
+  - stage: BuildAndTest
+    displayName: 'Build and Test'
+    jobs:
+      - job: API
+        displayName: 'API Build and Test'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8'
+            inputs:
+              packageType: 'sdk'
+              version: $(dotnetSdkVersion)
+              includePreviewVersions: false
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore API'
+            inputs:
+              command: 'restore'
+              projects: '**/*.csproj'
+              feedsToUse: 'select'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build API and Tests'
+            inputs:
+              command: 'build'
+              projects: '**/*.csproj'
+              arguments: '--no-restore --configuration Release'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Run API Unit Tests'
+            inputs:
+              command: 'test'
+              projects: '**/AutoInsuranceApi.Tests/*.csproj'
+              arguments: '--no-build --configuration Release --verbosity normal'
+              publishTestResults: true
+              testRunTitle: 'API Unit Tests'
+
+      - job: Client
+        displayName: 'Client Unit Tests'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node 20'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              cd Client
+              npm ci
+            displayName: 'npm ci (Client)'
+
+          # Linux (bash)
+          - script: |
+              if [ -f /usr/bin/google-chrome ]; then
+                export CHROME_BIN=/usr/bin/google-chrome
+              elif [ -f /usr/bin/chromium-browser ]; then
+                export CHROME_BIN=/usr/bin/chromium-browser
+              else
+                sudo apt-get update -qq
+                sudo apt-get install -y chromium-browser
+                export CHROME_BIN=/usr/bin/chromium-browser
+              fi
+              cd Client && npm run test:once
+            displayName: 'Run Client Unit Tests (Karma/Jasmine)'
+            condition: eq(variables['Agent.OS'], 'Linux')
+
+          # Windows (Default pool is typically Windows)
+          - powershell: |
+              $chromePaths = @(
+                "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe",
+                "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
+              )
+              foreach ($p in $chromePaths) {
+                if (Test-Path $p) {
+                  $env:CHROME_BIN = $p
+                  break
+                }
+              }
+              Set-Location Client
+              if ($env:CHROME_BIN) {
+                npm run test:once
+              } else {
+                Write-Host "##vso[task.logissue type=warning]Chrome not found on agent. Skipping client unit tests. Install Chrome or set CHROME_BIN to run them."
+                Write-Host "Skipping client tests - Chrome not installed."
+              }
+            displayName: 'Run Client Unit Tests (Karma/Jasmine) - Windows'
+            condition: eq(variables['Agent.OS'], 'Windows_NT')
