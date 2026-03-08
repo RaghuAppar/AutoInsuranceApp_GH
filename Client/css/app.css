@@ -164,6 +164,12 @@ tr:hover { background: rgba(26, 95, 122, 0.04); }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .actions .btn { margin: 0; }
 
+/* Payment options */
+.payment-methods { display: flex; gap: 16px; flex-wrap: wrap; }
+.payment-option { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; }
+.payment-fields { margin-top: 16px; padding: 16px; background: var(--bg); border-radius: var(--radius); }
+.payment-done h3 { margin-top: 0; }
+
 /* Responsive nav */
 @media (max-width: 900px) {
   .main-nav { display: none; }

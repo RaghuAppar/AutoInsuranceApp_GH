@@ -20,3 +20,19 @@ public class CreatePaymentRequest
     public string PaymentMethod { get; set; } = "Card";
     public string? PaymentToken { get; set; }
 }
+
+/// <summary>Request for dummy payment gateway (Card, NetBanking, UPI)</summary>
+public class ProcessPaymentRequest
+{
+    public int PolicyId { get; set; }
+    public decimal Amount { get; set; }
+    public string PaymentMethod { get; set; } = "Card"; // Card, NetBanking, UPI
+    // Card
+    public string? CardLast4 { get; set; }
+    public string? CardExpiry { get; set; }
+    public string? CardCvv { get; set; }
+    // NetBanking
+    public string? BankCode { get; set; }
+    // UPI
+    public string? UpiId { get; set; }
+}

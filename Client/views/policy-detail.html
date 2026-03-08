@@ -12,6 +12,7 @@
       <li ng-repeat="v in vm.policy.vehicles">{{ v.year }} {{ v.make }} {{ v.model }} ({{ v.vin }})</li>
     </ul>
     <div ng-if="vm.policy.status === 'Active'" class="actions" style="margin-top: 20px;">
+      <a href="#!/pay/{{ vm.policy.id }}" class="btn btn-success">Pay Premium</a>
       <button type="button" class="btn btn-danger" ng-click="vm.cancel()" ng-disabled="vm.cancelling">{{ vm.cancelling ? 'Cancelling...' : 'Cancel Policy' }}</button>
     </div>
     <div class="actions" style="margin-top: 16px;">

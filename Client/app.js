@@ -24,6 +24,7 @@
         .when('/claims/new', { templateUrl: 'views/claim-new.html', controller: 'ClaimNewController', controllerAs: 'vm', resolve: { auth: ['authService', function (authService) { return authService.requireAuth(); }] } })
         .when('/claims/:id', { templateUrl: 'views/claim-detail.html', controller: 'ClaimDetailController', controllerAs: 'vm', resolve: { auth: ['authService', function (authService) { return authService.requireAuth(); }] } })
         .when('/payments', { templateUrl: 'views/payments.html', controller: 'PaymentsController', controllerAs: 'vm', resolve: { auth: ['authService', function (authService) { return authService.requireAuth(); }] } })
+        .when('/pay/:policyId', { templateUrl: 'views/pay.html', controller: 'PayController', controllerAs: 'vm', resolve: { auth: ['authService', function (authService) { return authService.requireAuth(); }] } })
         .otherwise({ redirectTo: '/dashboard' });
 
       $httpProvider.interceptors.push('authInterceptor');

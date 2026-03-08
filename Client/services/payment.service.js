@@ -8,7 +8,8 @@
         return apiService.get(url);
       },
       getById: function (id) { return apiService.get('/payments/' + id); },
-      create: function (data) { return apiService.post('/payments', data); }
+      create: function (data) { return apiService.post('/payments', data); },
+      process: function (data) { return apiService.post('/payments/process', data); }
     };
   });
 })();
