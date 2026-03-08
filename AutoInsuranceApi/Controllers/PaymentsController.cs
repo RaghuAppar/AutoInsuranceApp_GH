@@ -78,6 +78,85 @@ public class PaymentsController : ControllerBase
         });
     }
 
+    /// <summary>POST /api/payments/process - Dummy gateway: Card, NetBanking, UPI</summary>
+    [HttpPost("process")]
+    [ProducesResponseType(typeof(PaymentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Process([FromBody] ProcessPaymentRequest request, CancellationToken ct)
+    {
+        var policy = await _db.Policies.FirstOrDefaultAsync(p => p.Id == request.PolicyId && p.UserId == UserId, ct);
+        if (policy == null)
+            return BadRequest(new { message = "Policy not found." });
+        if (policy.Status != "Active")
+            return BadRequest(new { message = "Policy is not active." });
+        if (request.Amount <= 0)
+            return BadRequest(new { message = "Invalid amount." });
+
+        var method = request.PaymentMethod ?? "Card";
+        if (method != "Card" && method != "NetBanking" && method != "UPI")
+            return BadRequest(new { message = "Payment method must be Card, NetBanking, or UPI." });
+
+        bool gatewaySuccess = true;
+        string? failureReason = null;
+
+        if (method == "Card")
+        {
+            if (string.IsNullOrWhiteSpace(request.CardLast4) || request.CardLast4.Trim().Length != 4)
+            { gatewaySuccess = false; failureReason = "Card last 4 digits required."; }
+        }
+        else if (method == "NetBanking")
+        {
+            if (string.IsNullOrWhiteSpace(request.BankCode))
+            { gatewaySuccess = false; failureReason = "Please select a bank."; }
+        }
+        else if (method == "UPI")
+        {
+            if (string.IsNullOrWhiteSpace(request.UpiId))
+            { gatewaySuccess = false; failureReason = "UPI ID required."; }
+        }
+
+        if (gatewaySuccess && failureReason == null)
+        {
+            var rnd = Random.Shared.NextDouble();
+            if (rnd < 0.05) { gatewaySuccess = false; failureReason = "Dummy gateway: payment declined."; }
+        }
+
+        var txnId = "TXN_" + Guid.NewGuid().ToString("N")[..16].ToUpperInvariant();
+        var payment = new Models.Payment
+        {
+            PolicyId = request.PolicyId,
+            Amount = request.Amount,
+            PaymentMethod = method,
+            PaymentToken = txnId,
+            Status = gatewaySuccess ? "Completed" : "Failed",
+            FailureReason = failureReason,
+            PaidAt = gatewaySuccess ? DateTime.UtcNow : null,
+            IsRefund = false
+        };
+        _db.Payments.Add(payment);
+        await _db.SaveChangesAsync(ct);
+
+        if (gatewaySuccess)
+        {
+            _db.AuditLogs.Add(new AuditLog { UserId = UserId, Action = "Payment", EntityType = "Payment", EntityId = payment.Id.ToString() });
+            await _db.SaveChangesAsync(ct);
+        }
+
+        var dto = new PaymentDto
+        {
+            Id = payment.Id,
+            PolicyId = payment.PolicyId,
+            Amount = payment.Amount,
+            PaymentMethod = payment.PaymentMethod,
+            Status = payment.Status,
+            FailureReason = payment.FailureReason,
+            PaidAt = payment.PaidAt,
+            CreatedAt = payment.CreatedAt,
+            IsRefund = payment.IsRefund
+        };
+        return Ok(dto);
+    }
+
     /// <summary>POST /api/payments - Record a payment (tokenized)</summary>
     [HttpPost]
     [ProducesResponseType(typeof(PaymentDto), StatusCodes.Status201Created)]
