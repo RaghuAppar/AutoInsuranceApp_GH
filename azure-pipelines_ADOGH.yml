@@ -1,0 +1,243 @@
+# AutoInsuranceApp CI Pipeline
+# Builds API, runs API and Client unit tests.
+# On failure: captures reason, recommends fix, and publishes failure report.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - '*.md'
+      - 'docs/*'
+
+pr:
+  branches:
+    include:
+      - development
+
+pool: Default
+
+variables:
+  dotnetSdkVersion: '8.0.x'
+  nodeVersion: '20.x'
+
+stages:
+  - stage: BuildAndTest
+    displayName: 'Build and Test'
+    jobs:
+      - job: API
+        displayName: 'API Build and Test'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8'
+            inputs:
+              packageType: 'sdk'
+              version: $(dotnetSdkVersion)
+              includePreviewVersions: false
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore API'
+            inputs:
+              command: 'restore'
+              projects: '**/*.csproj'
+              feedsToUse: 'select'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build API and Tests'
+            inputs:
+              command: 'build'
+              projects: '**/*.csproj'
+              arguments: '--no-restore --configuration Release'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Run API Unit Tests'
+            inputs:
+              command: 'test'
+              projects: '**/AutoInsuranceApi.Tests/*.csproj'
+              arguments: '--no-build --configuration Release --verbosity normal'
+              publishTestResults: true
+              testRunTitle: 'API Unit Tests'
+
+          - script: |
+              mkdir -p "$(Build.ArtifactStagingDirectory)/failure-api"
+              echo "Job=API" > "$(Build.ArtifactStagingDirectory)/failure-api/failure_info.txt"
+              echo "BuildId=$(Build.BuildId)" >> "$(Build.ArtifactStagingDirectory)/failure-api/failure_info.txt"
+              echo "Branch=$(Build.SourceBranch)" >> "$(Build.ArtifactStagingDirectory)/failure-api/failure_info.txt"
+            displayName: 'Capture failure context (API)'
+            condition: failed()
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish failure artifact (API)'
+            condition: failed()
+            inputs:
+              path: '$(Build.ArtifactStagingDirectory)/failure-api'
+              artifactName: 'failure-api'
+              publishLocation: 'Container'
+
+      - job: Client
+        displayName: 'Client Unit Tests'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node 20'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              cd Client
+              npm ci
+            displayName: 'npm ci (Client)'
+
+          # Linux (bash)
+          - script: |
+              if [ -f /usr/bin/google-chrome ]; then
+                export CHROME_BIN=/usr/bin/google-chrome
+              elif [ -f /usr/bin/chromium-browser ]; then
+                export CHROME_BIN=/usr/bin/chromium-browser
+              else
+                sudo apt-get update -qq
+                sudo apt-get install -y chromium-browser
+                export CHROME_BIN=/usr/bin/chromium-browser
+              fi
+              cd Client && npm run test:once
+            displayName: 'Run Client Unit Tests (Karma/Jasmine)'
+            condition: eq(variables['Agent.OS'], 'Linux')
+
+          # Windows (Default pool is typically Windows)
+          - powershell: |
+              $chromePaths = @(
+                "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe",
+                "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
+              )
+              foreach ($p in $chromePaths) {
+                if (Test-Path $p) {
+                  $env:CHROME_BIN = $p
+                  break
+                }
+              }
+              Set-Location Client
+              if ($env:CHROME_BIN) {
+                npm run test:once
+              } else {
+                Write-Host "##vso[task.logissue type=warning]Chrome not found on agent. Skipping client unit tests. Install Chrome or set CHROME_BIN to run them."
+                Write-Host "Skipping client tests - Chrome not installed."
+              }
+            displayName: 'Run Client Unit Tests (Karma/Jasmine) - Windows'
+            condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+          - script: |
+              mkdir -p "$(Build.ArtifactStagingDirectory)/failure-client"
+              echo "Job=Client" > "$(Build.ArtifactStagingDirectory)/failure-client/failure_info.txt"
+              echo "BuildId=$(Build.BuildId)" >> "$(Build.ArtifactStagingDirectory)/failure-client/failure_info.txt"
+              echo "Branch=$(Build.SourceBranch)" >> "$(Build.ArtifactStagingDirectory)/failure-client/failure_info.txt"
+            displayName: 'Capture failure context (Client)'
+            condition: failed()
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish failure artifact (Client)'
+            condition: failed()
+            inputs:
+              path: '$(Build.ArtifactStagingDirectory)/failure-client'
+              artifactName: 'failure-client'
+              publishLocation: 'Container'
+
+      - job: DiagnoseAndLog
+        displayName: 'Diagnose failure and log reason + fix'
+        condition: failed()
+        dependsOn:
+          - API
+          - Client
+        steps:
+          - download: current
+            displayName: 'Download failure artifacts'
+            continueOnError: true
+
+          - script: |
+              set -e
+              REPORT="$(Build.ArtifactStagingDirectory)/failure-report.md"
+              WORKSPACE="$(Pipeline.Workspace)"
+              echo "# Pipeline Failure Report" > "$REPORT"
+              echo "" >> "$REPORT"
+              echo "**Build ID:** $(Build.BuildId)" >> "$REPORT"
+              echo "**Branch:** $(Build.SourceBranch)" >> "$REPORT"
+              echo "**Time (UTC):** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$REPORT"
+              echo "" >> "$REPORT"
+              echo "## Failure reason" >> "$REPORT"
+              echo "" >> "$REPORT"
+              REASON=""
+              FIX=""
+              if [ -f "$WORKSPACE/failure-api/failure_info.txt" ]; then
+                echo "API job failed. See API job logs for the exact failing step (Restore, Build, or Test)." >> "$REPORT"
+                REASON="API job failed (restore, build, or tests)."
+                FIX="Run locally: \`dotnet restore\`, \`dotnet build --configuration Release\`, \`dotnet test --no-build --configuration Release\`. Fix restore errors, build errors, or failing tests in AutoInsuranceApi.Tests."
+              fi
+              if [ -f "$WORKSPACE/failure-client/failure_info.txt" ]; then
+                [ -n "$REASON" ] && echo "" >> "$REPORT"
+                echo "Client job failed. See Client job logs for the exact failing step (npm ci or Karma/Jasmine tests)." >> "$REPORT"
+                REASON="${REASON:+$REASON }Client job failed (npm install or unit tests)."
+                FIX="${FIX:+$FIX } Run locally in Client: \`npm ci\`, \`npm run test:once\`. Ensure Chrome/Chromium is installed if tests need it, or fix failing specs."
+              fi
+              if [ -z "$REASON" ]; then
+                echo "One or more jobs failed. Check the Build and Test stage logs for the failed job(s)." >> "$REPORT"
+                FIX="Open the failed job in Azure DevOps and review the step that failed; fix the underlying error and push again."
+              fi
+              echo "" >> "$REPORT"
+              echo "## Recommended fix" >> "$REPORT"
+              echo "" >> "$REPORT"
+              echo "$FIX" >> "$REPORT"
+              echo "" >> "$REPORT"
+              echo "---" >> "$REPORT"
+              echo "*This report was generated by the DiagnoseAndLog workflow.*" >> "$REPORT"
+              echo "##vso[task.uploadsummary]$(Build.ArtifactStagingDirectory)/failure-report.md"
+            displayName: 'Generate failure report (Linux)'
+            condition: eq(variables['Agent.OS'], 'Linux')
+
+          - powershell: |
+              $reportPath = Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY "failure-report.md"
+              $workspace = $env:PIPELINE_WORKSPACE
+              if (-not $workspace) { $workspace = $env:SYSTEM_DEFAULTWORKINGDIRECTORY }
+              @"
+              # Pipeline Failure Report
+
+              **Build ID:** $env:BUILD_BUILDID
+              **Branch:** $env:BUILD_SOURCEBRANCH
+              **Time (UTC):** $([DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))
+
+              ## Failure reason
+
+              "@ | Set-Content -Path $reportPath -Encoding utf8
+              $fix = @()
+              $apiInfo = Join-Path $workspace "failure-api\failure_info.txt"
+              $clientInfo = Join-Path $workspace "failure-client\failure_info.txt"
+              if (Test-Path $apiInfo) {
+                  "API job failed. See API job logs for the exact failing step (Restore, Build, or Test)." | Add-Content -Path $reportPath
+                  $fix += "Run locally: ``dotnet restore``, ``dotnet build --configuration Release``, ``dotnet test --no-build --configuration Release``. Fix restore errors, build errors, or failing tests in AutoInsuranceApi.Tests."
+              }
+              if (Test-Path $clientInfo) {
+                  "" | Add-Content -Path $reportPath
+                  "Client job failed. See Client job logs for the exact failing step (npm ci or Karma/Jasmine tests)." | Add-Content -Path $reportPath
+                  $fix += "Run locally in Client: ``npm ci``, ``npm run test:once``. Ensure Chrome/Chromium is installed if tests need it, or fix failing specs."
+              }
+              if ($fix.Count -eq 0) {
+                  "One or more jobs failed. Check the Build and Test stage logs for the failed job(s)." | Add-Content -Path $reportPath
+                  $fix += "Open the failed job in Azure DevOps and review the step that failed; fix the underlying error and push again."
+              }
+              @"
+
+              ## Recommended fix
+
+              $($fix -join " ")
+              ---
+              *This report was generated by the DiagnoseAndLog workflow.*
+              "@ | Add-Content -Path $reportPath
+              Write-Host "##vso[task.uploadsummary]$reportPath"
+            displayName: 'Generate failure report (Windows)'
+            condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish failure report'
+            condition: always()
+            inputs:
+              path: '$(Build.ArtifactStagingDirectory)'
+              artifactName: 'failure-report'
+              publishLocation: 'Container'
