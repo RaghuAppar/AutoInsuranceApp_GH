@@ -33,7 +33,7 @@ jobs:
     - name: DeployToAppSerice
       uses: azure/webapps-deploy@v2
       with:
-        app-name: autoinsurance
+        app-name: autoinsruance
         slot-name: production
         publish-profile: ${{secrets.AZURE_WEBAPP_PUBLISHPROFILE}}
         package: publish
