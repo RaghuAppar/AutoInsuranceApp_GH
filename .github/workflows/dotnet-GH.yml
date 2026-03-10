@@ -31,7 +31,7 @@ jobs:
     - name: Publish
       run: dotnet publish AutoInsuranceApi.Tests/AutoInsuranceApi.Tests.csproj -c Release -o publish
     - name: DeployToAppSerice
-      uses: Azure/webapps-deploy@3.0.5
+      uses: Azure/webapps-deploy@3
       with:
         app-name: autoinsurance
         publish-profile: ${{secrets.AZURE_WEBAPP_PUBLISHPROFILE}}
