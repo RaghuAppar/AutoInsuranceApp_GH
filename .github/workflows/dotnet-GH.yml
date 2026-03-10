@@ -34,6 +34,7 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: autoinsurance
+        slot-name: production
         publish-profile: ${{secrets.AZURE_WEBAPP_PUBLISHPROFILE}}
         package: publish
-
+    
