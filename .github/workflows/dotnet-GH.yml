@@ -26,4 +26,6 @@ jobs:
       run: dotnet restore AutoInsuranceApi/AutoInsuranceApi.csproj
     - name: Build
       run: dotnet build AutoInsuranceApi/AutoInsuranceApi.csproj  --no-restore
+    - name: Test
+      run: dotnet test AutoInsuranceApi.Tests/AutoInsuranceApi.Tests.csproj
 
