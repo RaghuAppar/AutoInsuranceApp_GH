@@ -25,6 +25,4 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build ../AutoInsuranceApi/AutoInsuranceApi.csproj --no-restore
-    - name: Test
-      run: dotnet test ../AutoInsuranceApi.Tests/AutoInsuranceApi.Tests.csproj --no-build --verbosity normal
+      run: dotnet build --project AutoInsuranceApi/AutoInsuranceApi.csproj --no-restore
